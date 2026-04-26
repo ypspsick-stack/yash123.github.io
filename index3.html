@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ping Pong Game</title>
+<style>
+    body {
+        margin: 0;
+        background: #111;
+        color: white;
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+
+    h1 {
+        margin: 10px;
+    }
+
+    canvas {
+        background: black;
+        display: block;
+        margin: 20px auto;
+        border: 3px solid white;
+    }
+
+    .info {
+        margin-top: 10px;
+        font-size: 14px;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>🏓 Ping Pong Game</h1>
+<canvas id="gameCanvas" width="800" height="400"></canvas>
+<div class="info">Use ↑ and ↓ keys to move your paddle</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// Paddle
+const paddleWidth = 10;
+const paddleHeight = 80;
+
+// Player paddle
+let playerY = canvas.height / 2 - paddleHeight / 2;
+
+// Computer paddle
+let cpuY = canvas.height / 2 - paddleHeight / 2;
+
+// Ball
+let ballX = canvas.width / 2;
+let ballY = canvas.height / 2;
+let ballRadius = 8;
+
+let ballSpeedX = 5;
+let ballSpeedY = 4;
+
+// Score
+let playerScore = 0;
+let cpuScore = 0;
+
+// Draw everything
+function draw() {
+    // Background
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Net
+    ctx.fillStyle = "white";
+    for (let i = 0; i < canvas.height; i += 20) {
+        ctx.fillRect(canvas.width/2 - 1, i, 2, 10);
+    }
+
+    // Player paddle
+    ctx.fillRect(0, playerY, paddleWidth, paddleHeight);
+
+    // CPU paddle
+    ctx.fillRect(canvas.width - paddleWidth, cpuY, paddleWidth, paddleHeight);
+
+    // Ball
+    ctx.beginPath();
+    ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Score
+    ctx.font = "20px Arial";
+    ctx.fillText(playerScore, canvas.width / 4, 30);
+    ctx.fillText(cpuScore, canvas.width * 3 / 4, 30);
+}
+
+// Update game logic
+function update() {
+    ballX += ballSpeedX;
+    ballY += ballSpeedY;
+
+    // Bounce top/bottom
+    if (ballY < 0 || ballY > canvas.height) {
+        ballSpeedY = -ballSpeedY;
+    }
+
+    // Player collision
+    if (ballX < paddleWidth) {
+        if (ballY > playerY && ballY < playerY + paddleHeight) {
+            ballSpeedX = -ballSpeedX;
+        } else {
+            cpuScore++;
+            resetBall();
+        }
+    }
+
+    // CPU collision
+    if (ballX > canvas.width - paddleWidth) {
+        if (ballY > cpuY && ballY < cpuY + paddleHeight) {
+            ballSpeedX = -ballSpeedX;
+        } else {
+            playerScore++;
+            resetBall();
+        }
+    }
+
+    // Simple AI for CPU
+    cpuY += ((ballY - (cpuY + paddleHeight / 2))) * 0.1;
+}
+
+// Reset ball
+function resetBall() {
+    ballX = canvas.width / 2;
+    ballY = canvas.height / 2;
+    ballSpeedX = -ballSpeedX;
+}
+
+// Controls
+document.addEventListener("keydown", function(e) {
+    if (e.key === "ArrowUp") {
+        playerY -= 20;
+    }
+    if (e.key === "ArrowDown") {
+        playerY += 20;
+    }
+});
+
+// Game loop
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
